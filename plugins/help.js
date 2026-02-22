@@ -4,7 +4,7 @@ const axios = require('axios');
 
 const lastHelpMessage = new Map();
 
-const HELP_IMG_URL = "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/zanta-md.png?raw=true";
+const HELP_IMG_URL = "https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/zanta-md.png";
 
 // --- 🖼️ IMAGE PRE-LOAD LOGIC ---
 let cachedHelpImage = null;
