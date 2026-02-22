@@ -205,7 +205,7 @@ cmd(
 
             // ලෝගෝ එක Buffer එකක් ලෙස ලබා ගැනීම
             let logoRes = await axios.get(
-                "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/Gemini_Generated_Image_4xcl2e4xcl2e4xcl.png?raw=true",
+                "https://github.com/Akashkavindu/MINI-BOT-SOURCE/raw/main/IMG_1688.jpg",
                 { responseType: "arraybuffer" },
             );
             let logoBuffer = Buffer.from(logoRes.data, "binary");
@@ -214,10 +214,9 @@ cmd(
             let ownerMsg = `👑 *|${botName.toUpperCase()} OWNER INFO|* 👑
 
 👤 *Name:* Akash kavindu
-🌍 *Location:* Sri Lanka 🇱🇰
+🌍 *Location:* Mawanella
 📱 *WhatsApp:* 94743404814
-
-📢 *Join our Channel:* https://whatsapp.com/channel/0029VbBc42s84OmJ3V1RKd2B
+🙃 *Nick name:* Zanta
 
 > *©️ 𝐙𝐀𝐍𝐓𝐀 𝐎𝐅𝐂*`;
 
