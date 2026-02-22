@@ -1,7 +1,6 @@
 const { cmd } = require("../command");
 const axios = require("axios");
 const config = require("../config");
-const { Readable } = require("stream"); // Stream එකක් විදිහට හසුරුවන්න
 
 cmd({
     pattern: "insta",
@@ -23,11 +22,12 @@ cmd({
         if (response.data && response.data.status) {
             const result = response.data;
             
+            // API එකේ තියෙන thumbnail එක මුලින්ම පෙන්වමු
             let msg = `✨ *ZANTA-MD INSTA DL* ✨\n\n` +
                       `📝 *Type:* Instagram Media\n` +
                       `🔗 *Link:* ${q.split('?')[0]}\n\n` +
                       `*Reply with a number:* \n\n` +
-                      `1️⃣ *Download Media* (Optimized)\n\n` +
+                      `1️⃣ *Download Media* (Video/Image)\n\n` +
                       `> *© Powered by ZANTA-MD*`;
 
             const sentMsg = await bot.sendMessage(from, { 
@@ -50,37 +50,47 @@ cmd({
 
                     try {
                         const mediaUrl = result.downloadUrl;
-                        const isVideo = mediaUrl.toLowerCase().includes("mp4") || mediaUrl.toLowerCase().includes("video");
+                        
+                        // --- [වැදගත් වෙනස] ---
+                        // URL එකේ mp4 තියෙනවද බලනවා වෙනුවට, අපි මුලින්ම URL එකට Request එකක් දාලා 
+                        // ඒක ඇත්තටම වීඩියෝ එකක්ද (video/mp4) කියලා Header එකෙන් චෙක් කරමු.
+                        const head = await axios.head(mediaUrl, {
+                            headers: { 'User-Agent': 'Mozilla/5.0' }
+                        });
+                        const contentType = head.headers['content-type'];
+                        const isVideo = contentType && contentType.includes('video');
 
-                        // AXIOS STREAM පාවිච්චි කිරීම
                         const mediaResponse = await axios({
                             method: 'get',
                             url: mediaUrl,
-                            responseType: 'stream', // මෙතන තමයි magic එක තියෙන්නේ
+                            responseType: 'arraybuffer', // Stream වලදී සමහරවිට ඩවුන්ලෝඩ් නොවී මැසේජ් එක යනවා, ArrayBuffer එක 100% sure.
                             headers: {
                                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
                                 'Referer': 'https://instasave.website/'
                             }
                         });
 
+                        const buffer = Buffer.from(mediaResponse.data);
+
                         if (isVideo) {
                             await bot.sendMessage(from, { 
-                                video: { stream: mediaResponse.data }, // Stream එකක් විදිහට යවනවා
+                                video: buffer, 
                                 caption: `✅ *Downloaded by ZANTA-MD*`,
                                 mimetype: 'video/mp4',
                                 fileName: 'insta_video.mp4'
                             }, { quoted: msgUpdate });
                         } else {
                             await bot.sendMessage(from, { 
-                                image: { stream: mediaResponse.data }, 
-                                caption: `✅ *Downloaded by ZANTA-MD*`
+                                image: buffer, 
+                                caption: `✅ *Downloaded by ZANTA-MD*`,
+                                mimetype: 'image/jpeg'
                             }, { quoted: msgUpdate });
                         }
 
                         await bot.sendMessage(from, { react: { text: '✅', key: msgUpdate.key } });
                     } catch (err) {
-                        console.error("STREAM ERROR:", err.message);
-                        reply("❌ Failed to stream media. The link might be restricted.");
+                        console.error("DOWNLOAD ERROR:", err.message);
+                        reply("❌ Failed to download media. It might be a private post or an expired link.");
                     }
                 }
             };
