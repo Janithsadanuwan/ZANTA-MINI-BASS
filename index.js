@@ -310,12 +310,11 @@ async function connectToWA(sessionData) {
         emitOwnEvents: true,
         markOnlineOnConnect: userSettings.alwaysOnline === "true",
         msgRetryCounterCache,
-        defaultQueryTimeoutMs: undefined,
         
-        getMessage: async (key) => {
+       getMessage: async (key) => {
             const msgs = readMsgs();
             if (msgs[key.id]) return msgs[key.id].message;
-            return undefined;
+            return { conversation: "ZANTA-MD" };
         },
         patchMessageBeforeSending: (message) => {
             const requiresPatch = !!(
