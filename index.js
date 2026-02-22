@@ -38,6 +38,7 @@ const activeSockets = new Set();
 const lastWorkTypeMessage = new Map();
 const lastAntiDeleteMessage = new Map();
 const lastSecurityMessage = new Map();
+const retryCount = {};
 
 global.activeSockets = new Set();
 global.BOT_SESSIONS_CONFIG = {};
@@ -345,20 +346,37 @@ async function connectToWA(sessionData) {
     zanta.ev.on("connection.update", async (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === "close") {
-            activeSockets.delete(zanta);
-            zanta.ev.removeAllListeners();
-            if (zanta.onlineInterval) clearInterval(zanta.onlineInterval);
+    activeSockets.delete(zanta);
+    zanta.ev.removeAllListeners();
+    if (zanta.onlineInterval) clearInterval(zanta.onlineInterval);
 
-            const reason = lastDisconnect?.error?.output?.statusCode;
-            if (reason === DisconnectReason.loggedOut) {
-                console.log(`👤 [${userNumber}] Logged out. Deleting from DB.`);
-                await Session.deleteOne({ number: sessionData.number });
-                if (fs.existsSync(authPath)) fs.rmSync(authPath, { recursive: true, force: true });
-            } else {
-                console.log(`🔄 [${userNumber}] Disconnected. Reconnecting in 5s...`);
-                setTimeout(() => connectToWA(sessionData), 5000);
+    const reason = lastDisconnect?.error?.output?.statusCode;
+    retryCount[userNumber] = (retryCount[userNumber] || 0) + 1;
+
+    if (reason === DisconnectReason.loggedOut) {
+        console.log(`👤 [${userNumber}] Logged out. Deleting from DB.`);
+        await Session.deleteOne({ number: sessionData.number });
+        if (fs.existsSync(authPath)) fs.rmSync(authPath, { recursive: true, force: true });
+    }
+    else if (retryCount[userNumber] > 5) {
+        console.log(`❌ [${userNumber}] Reconnection limit reached. Deleting session from DB.`);
+        delete retryCount[userNumber]; 
+
+        try {
+            await Session.deleteOne({ number: sessionData.number });
+            if (fs.existsSync(authPath)) {
+                fs.rmSync(authPath, { recursive: true, force: true });
             }
-        } else if (connection === "open") {
+            console.log(`🗑️ [${userNumber}] Session completely removed due to connection failures.`);
+        } catch (dbError) {
+            console.error(`⚠️ Error while removing failed session:`, dbError.message);
+        }
+    }
+    else {
+        console.log(`🔄 [${userNumber}] Disconnected (Attempt ${retryCount[userNumber]}/5). Reconnecting in 5s...`);
+        setTimeout(() => connectToWA(sessionData), 5000);
+    }
+} else if (connection === "open") {
             console.log(`✅ [${userNumber}] Connected on APP_ID: ${MY_APP_ID}`);
             
             if (userSettings.connectionMsg === "true") {
@@ -589,13 +607,13 @@ async function connectToWA(sessionData) {
                 });
             };
             if (checkMatch(gmKeywords)) {
-                audioUrl = 'https://github.com/Akashkavindu/ZANTA_MD/raw/main/images/gm-new.mp3'; 
+                audioUrl = 'https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/gm-new.mp3'; 
             }
             else if (checkMatch(mokoKeywords)) {
-                audioUrl = 'https://github.com/Akashkavindu/ZANTA_MD/raw/main/images/mn.mp3';
+                audioUrl = 'https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/mn.mp3';
             }
             else if (checkMatch(gnKeywords)) {
-                audioUrl = 'https://github.com/Akashkavindu/ZANTA_MD/raw/main/images/gn.mp3';
+                audioUrl = 'https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/gn.mp3';
             }
 
             if (audioUrl) {
