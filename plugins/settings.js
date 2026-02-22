@@ -3,7 +3,7 @@ const { updateSetting } = require("./bot_db");
 const config = require("../config");
 
 // Default Image Link
-const DEFAULT_IMG = "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/zanta-md.png?raw=true";
+const DEFAULT_IMG = "https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/zanta-md.png";
 
 const lastSettingsMessage = new Map();
 const lastSecurityMessage = new Map(); // Security sub-menu එක track කිරීමට
