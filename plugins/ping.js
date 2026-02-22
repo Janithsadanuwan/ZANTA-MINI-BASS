@@ -4,7 +4,7 @@ const { runtime } = require('../lib/functions');
 const config = require("../config");
 const axios = require('axios'); 
 
-const STATUS_IMAGE_URL = "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/zanta-md.png?raw=true";
+const STATUS_IMAGE_URL = "https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/zanta-md.png";
 
 // --- 🖼️ IMAGE PRE-LOAD LOGIC ---
 let cachedStatusImage = null;
