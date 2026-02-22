@@ -22,7 +22,7 @@ cmd({
         // --- 🖼️ IMAGE LOGIC: DB එකේ පින්තූරයක් ඇත්නම් එය පෙන්වයි ---
         const displayImg = (settings.botImage && settings.botImage !== "null") 
             ? { url: settings.botImage } 
-            : { url: "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/zanta-md.png?raw=true" };
+            : { url: "https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/zanta-md.png" };
 
         const loadingDesc = `╭━─━─━─━─━─━──━╮\n┃ *${currentBotName} FB Downloader*\n╰━─━─━─━─━─━──━╯\n\n⏳ *Waiting for download...*`;
 
