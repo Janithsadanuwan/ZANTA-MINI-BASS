@@ -11,7 +11,7 @@ let cachedAliveImage = null;
 async function preLoadAliveImage() {
     try {
         // මෙතනදී config එකේ තියෙන default image එක cache කරගන්නවා
-        const imageUrl = config.ALIVE_IMG || "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/zanta-md.png?raw=true";
+        const imageUrl = config.ALIVE_IMG || "https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/zanta-md.png";
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         cachedAliveImage = Buffer.from(response.data);
         console.log("✅ [CACHE] Alive image pre-loaded successfully.");
