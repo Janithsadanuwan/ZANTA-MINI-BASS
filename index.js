@@ -363,7 +363,7 @@ async function connectToWA(sessionData) {
             
             if (userSettings.connectionMsg === "true") {
                 await zanta.sendMessage(decodeJid(zanta.user.id), {
-                    image: { url: "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/zanta-md.png?raw=true" },
+                    image: { url: "https://raw.githubusercontent.com/Akashkavindu/MINI-BOT-SOURCE/main/zanta-md.png" },
                     caption: `${userSettings.botName} connected ✅`,
                 });
             }
