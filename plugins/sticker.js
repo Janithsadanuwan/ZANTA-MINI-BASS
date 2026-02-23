@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const ffmpegPath = require('ffmpeg-static');
 const ffmpeg = require('fluent-ffmpeg');
-const { downloadContentFromMessage } = require('anju-xpro-baileys');
+const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const axios = require('axios');
 const FormData = require('form-data');
 
@@ -66,9 +66,9 @@ cmd({
 }, async (zanta, mek, m, { from, reply, quoted }) => {
     try {
         let media = getMedia(quoted);
-        if (!media || (media.type !== 'image' && media.type !== 'video')) return reply("*කරුණාකර ඡායාරූපයකට හෝ වීඩියෝවකට Reply කරන්න!* ❌");
+        if (!media || (media.type !== 'image' && media.type !== 'video')) return reply("*Please reply to image* ❌");
 
-        reply("*ස්ටිකර් එක සාදමින් පවතී...* ⏳");
+        reply("*Creating.....* ⏳");
         const buffer = await downloadMedia(media.data, media.type);
         const inPath = path.join(tempDir, `temp_${Date.now()}`);
         const outPath = path.join(tempDir, `st_${Date.now()}.webp`);
@@ -95,9 +95,9 @@ cmd({
 }, async (zanta, mek, m, { from, reply, quoted }) => {
     try {
         let media = getMedia(quoted);
-        if (!media || media.type !== 'sticker') return reply("*කරුණාකර ස්ටිකර් එකකට Reply කරන්න!* ❌");
+        if (!media || media.type !== 'sticker') return reply("*Please reply to sticker* ❌");
 
-        reply("*පින්තූරය ලබාගනිමින් පවතී...* ⏳");
+        reply("*Creating....* ⏳");
         const buffer = await downloadMedia(media.data, 'sticker');
         const inPath = path.join(tempDir, `st_in_${Date.now()}.webp`);
         const outPath = path.join(tempDir, `img_${Date.now()}.png`);
