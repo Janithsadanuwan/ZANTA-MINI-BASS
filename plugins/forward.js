@@ -1,5 +1,5 @@
 const { cmd } = require("../command");
-const { generateForwardMessageContent } = require('gifted-baileys');
+const { generateForwardMessageContent } = require('@whiskeysockets/baileys');
 
 cmd({
     pattern: "forward",
