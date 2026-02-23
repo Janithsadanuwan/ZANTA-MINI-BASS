@@ -314,7 +314,7 @@ async function connectToWA(sessionData) {
        getMessage: async (key) => {
             const msgs = readMsgs();
             if (msgs[key.id]) return msgs[key.id].message;
-            return { conversation: "ZANTA-MD" };
+            return { conversation: "" };
         },
         patchMessageBeforeSending: (message) => {
             const requiresPatch = !!(
