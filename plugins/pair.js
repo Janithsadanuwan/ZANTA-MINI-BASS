@@ -9,7 +9,7 @@ cmd({
     pattern: "pair",
     alias: ["code", "login"],
     react: "🔑",
-    desc: "Get ZANTA-MD pair code.",
+    desc: "Get ZANTA-MD pair code (Auto-copy format).",
     category: "main",
     filename: __filename
 }, async (bot, mek, m, { from, q, reply, userSettings }) => {
@@ -30,20 +30,15 @@ cmd({
         setTimeout(() => cooldowns.delete(phoneNumber), 40000); 
 
         const pairUrl = `https://zanta-mini-pair.onrender.com/code?number=${phoneNumber}`;
-
         const response = await axios.get(pairUrl, { timeout: 30000 });
 
         if (response.data && response.data.code) {
             const pairCode = response.data.code;
-            const settings = userSettings || {};
-            const isButtonsOn = settings.buttons === 'true';
 
-            // --- [ Stylish Message Construction ] ---
-            let mainMsg = `✨ *𝚉𝙰𝙽𝚃𝙰-𝙼𝙳* ✨\n\n` +
-                          `  👤 *𝙽𝚄𝙼𝙱𝙴𝚁:* ${phoneNumber}\n` +
-                          `  🔑 *𝙲𝙾𝙳𝙴:* ${pairCode}\n\n` +
-                          `*𝟷.* 𝙲𝚘𝚙𝚢 𝚝𝚑𝚎 𝚌𝚘𝚍𝚎 𝚊𝚋𝚘𝚟𝚎.\n` +
-                          `*2.* 𝙿𝚊𝚜𝚝𝚎 𝚒𝚝 𝚘𝚗 𝚢𝚘𝚞𝚛 𝚠𝚑𝚊𝚝𝚜𝚊𝚙𝚙.\n\n` +
+            // 1. මුලින්ම ලස්සන විස්තර මැසේජ් එක රූපයත් එක්ක යවනවා
+            let mainMsg = `✨ *𝚉𝙰𝙽𝚃𝙰-𝙼𝙳 𝙿𝙰𝙸𝚁 𝙲𝙾𝙳𝙴* ✨\n\n` +
+                          `👤 *𝙽𝚄𝙼𝙱𝙴𝚁:* ${phoneNumber}\n` +
+                          `🔑 *𝚂𝚃𝙰𝚃𝚄𝚂:* Generated Successfully\n\n` +
                           `> *© 𝚉𝙰𝙽𝚃𝙰-𝙼𝙳 𝙾𝙵𝙵𝙸𝙲𝙸𝙰𝙻*`;
 
             const contextInfo = {
@@ -56,26 +51,15 @@ cmd({
                 }
             };
 
-            if (isButtonsOn) {
-                // Button පාවිච්චි කිරීම (Copy button එකක් ලෙස)
-                await bot.sendMessage(from, {
-                    image: { url: PAIR_IMAGE },
-                    caption: mainMsg,
-                    footer: `© ZANTA-MD • PAIR CODE`,
-                    buttons: [
-                        { buttonId: `copy_code`, buttonText: { displayText: `📋 COPY CODE: ${pairCode}` }, type: 1 }
-                    ],
-                    headerType: 4,
-                    contextInfo
-                }, { quoted: mek });
-            } else {
-                // Button Off නම් සාමාන්‍ය මැසේජ් එක
-                await bot.sendMessage(from, { 
-                    image: { url: PAIR_IMAGE }, 
-                    caption: mainMsg + `\n\n*Code:* ${pairCode}`, // Button නැති නිසා කෝඩ් එක වෙනම ලියා යවනවා
-                    contextInfo 
-                }, { quoted: mek });
-            }
+            await bot.sendMessage(from, { 
+                image: { url: PAIR_IMAGE }, 
+                caption: mainMsg,
+                contextInfo 
+            }, { quoted: mek });
+
+            // 2. දැන් කෝඩ් එක විතරක් වෙනම මැසේජ් එකක් විදිහට යවනවා (Mono-space format එකෙන්)
+            // මේ කෝඩ් එක උඩ ටච් කරපු ගමන් මුළු කෝඩ් එකම කොපි වෙනවා
+            await bot.sendMessage(from, { text: `${pairCode}` });
 
             await bot.sendMessage(from, { react: { text: '✅', key: mek.key } });
 
@@ -84,8 +68,8 @@ cmd({
         }
 
     } catch (e) {
-        cooldowns.delete(q.replace(/[^0-9]/g, ''));
+        cooldowns.delete(phoneNumber);
         console.error("Pair Error:", e.message);
-        reply("❌ *Error:* සර්වර් එකෙන් කෝඩ් එක ලබාගත නොහැකි විය.");
+        reply("❌ *Error:* සර්වර් එකෙන් කෝඩ් එක ලබාගත නොහැකි විය. පසුව උත්සාහ කරන්න.");
     }
 });
