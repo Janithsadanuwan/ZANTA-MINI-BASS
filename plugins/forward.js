@@ -1,38 +1,37 @@
 const { cmd } = require("../command");
-const { generateForwardMessageContent, relayMessage } = require("@whiskeysockets/baileys");
+const { generateForwardMessageContent } = require('gifted-baileys');
 
 cmd({
     pattern: "forward",
     alias: ["fwd", "sendto"],
     react: "↪",
-    desc: "Forward messages to a specific JID/LID",
+    desc: "Forward any message using gifted-baileys method",
     category: "main",
     filename: __filename,
 }, async (bot, mek, m, { from, q, reply, isOwner }) => {
     try {
-        // Owner Check
         if (!isOwner) return reply("❌ Bot Owner use only.");
-        
-        // Target Check
-        if (!q) return reply("📌 Please provide a target JID or LID.\nExample: .forward 947xxxxxxxx@s.whatsapp.net");
-        
-        // Quoted Message Check
-        if (!m.quoted) return reply("❌ Please reply to the message you want to forward.");
+        if (!q) return reply("📌 Target JID/LID එක ලබා දෙන්න.");
+        if (!m.quoted) return reply("❌ Forward කිරීමට අවශ්‍ය මැසේජ් එකට Reply කරන්න.");
 
         const targetJid = q.trim();
+        const rawMessage = m.quoted.fakeObj; // මුල් මැසේජ් එකේ දත්ත
 
-        // මැසේජ් එකේ Content එක Forward කිරීමට සුදුසු විදිහට සකස් කිරීම
-        // Gifted-Baileys වල m.quoted.fakeObj එක තමයි මුල් මැසේජ් එකේ දත්ත තියාගන්නේ
-        let forwardContent = await generateForwardMessageContent(m.quoted.fakeObj, { force: true });
+        // 1. Gifted-Baileys ක්‍රමයට Forward Content එක හදමු
+        // මෙතන false දාන්නේ "Forwarded" ටැග් එක ඕනේ නැත්නම් (true දාන්න ටැග් එක ඕනේ නම්)
+        const forwardContent = await generateForwardMessageContent(rawMessage, true);
 
-        // Content එකේ තියෙන message එක Target එකට Relay කිරීම
-        // මේකෙන් තමයි RAM එක යන්නේ නැතුව Forward වෙන්නේ
-        await bot.relayMessage(targetJid, forwardContent.message, { 
-            messageId: forwardContent.key.id 
-        });
+        // 2. generateForwardMessageContent එකෙන් එන result එකේ 
+        // message කෑල්ල විතරක් sendMessage එකට pass කරමු
+        if (!forwardContent || !forwardContent.message) {
+            throw new Error("Could not generate forward content.");
+        }
 
+        await bot.sendMessage(targetJid, forwardContent.message);
+
+        // Success
         await bot.sendMessage(from, { react: { text: "✅", key: mek.key } });
-        reply(`🚀 *Message Forwarded Successfully!*\n\n🎯 *To:* ${targetJid}`);
+        reply(`🚀 *Forwarded Successfully to:* ${targetJid}`);
 
     } catch (e) {
         console.error("FORWARD ERROR:", e);
