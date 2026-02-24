@@ -7,7 +7,7 @@ function convertToBool(text, fault = 'true') {
 
 module.exports = {
     // 🔑 Essential Session & Owner Settings
-    OWNER_NUMBER: process.env.OWNER_NUMBER || "94764793165",
+    OWNER_NUMBER: process.env.OWNER_NUMBER || "94764703165",
 
     // 🤖 Default Fallback Settings
     DEFAULT_BOT_NAME: process.env.DEFAULT_BOT_NAME || "ZANTA-MD",
