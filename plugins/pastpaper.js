@@ -3,89 +3,88 @@ const axios = require("axios");
 
 cmd({
     pattern: "paper",
-    alias: ["pastpaper", "pp"],
-    desc: "Search and download past papers.",
-    category: "download",
+    alias: ["pastpaper", "pp", "exam"],
     react: "🔎",
-    filename: __filename,
-}, async (zanta, mek, m, { from, q, reply, prefix }) => {
+    desc: "Search and download past papers from Paperhub.",
+    category: "download",
+    filename: __filename
+}, async (bot, mek, m, { from, q, reply, prefix }) => {
     try {
-        if (!q) return reply(`❎ කරුණාකර සෙවිය යුතු විෂය ලබා දෙන්න!\n\nExample: \`${prefix}pp o/l ict\``);
+        if (!q) return reply(`📚 *ZANTA PAPER SEARCH*\n\nExample: \`${prefix}paper combined maths\``);
 
-        const searchApi = `https://pp-api-beta.vercel.app/api/pastpapers?q=${encodeURIComponent(q)}`;
-        const { data } = await axios.get(searchApi);
+        const API_URL = `https://apis.sandarux.sbs/api/download/paperhub?apikey=darknero&q=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(API_URL);
 
-        if (!data?.results || data.results.length === 0) {
+        if (!data.status || !data.results || data.results.length === 0) {
             return reply("❎ කිසිදු ප්‍රතිඵලයක් හමු නොවීය!");
         }
 
-        // අනවශ්‍ය පිටු ඉවත් කිරීම
-        const filtered = data.results.filter(r => {
-            const t = (r.title || '').toLowerCase();
-            return r.link && !t.includes('next page') && !t.includes('contact us') && !t.includes('terms');
+        const results = data.results.slice(0, 10);
+        let msg = `📚 *ZANTA-MD PAPER HUB* 📚\n\n🔍 Query: *${q}*\n\n`;
+        
+        results.forEach((res, index) => {
+            msg += `${index + 1}️⃣ *${res.title}*\n`;
         });
+        
+        msg += `\n> *පේපර් එක ලබා ගැනීමට අදාළ අංකය Reply කරන්න.* \n\n*© ZANTA-MD*`;
 
-        const results = filtered.slice(0, 5);
-        let caption = `📚 *TOP PASTPAPER RESULTS:* ${q}\n\n`;
-        results.forEach((r, i) => {
-            caption += `*${i + 1}. ${r.title}*\n🔗 View: ${r.link}\n\n`;
-        });
-        caption += `*💬 පේපර් එක ඩවුන්ලෝඩ් කිරීමට අදාළ අංකය (1-${results.length}) Reply කරන්න.*`;
-
-        // මෙහි zanta යනු ඔයාගේ socket එකයි
-        const sentMsg = await zanta.sendMessage(from, {
-            image: results[0].thumbnail ? { url: results[0].thumbnail } : undefined,
-            text: results[0].thumbnail ? undefined : caption,
-            caption: results[0].thumbnail ? caption : undefined
+        const sentMsg = await bot.sendMessage(from, {
+            image: { url: results[0].image || "https://paperhub.lk/wp-content/uploads/2022/04/paperhub_logo.png" },
+            caption: msg
         }, { quoted: mek });
 
-        // User Reply එක අල්ලා ගැනීම (Listener)
-const listener = async (update) => {
-            const msg = update.messages[0];
-            if (!msg.message) return;
+        // --- Reply Listener Logic (Like song.js) ---
+        const listener = async (update) => {
+            try {
+                const msgUpdate = update.messages[0];
+                if (!msgUpdate.message) return;
 
-            const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
-            const isReply = msg.message.extendedTextMessage?.contextInfo?.stanzaId === sentMsg.key.id;
+                const body = msgUpdate.message.conversation || 
+                             msgUpdate.message.extendedTextMessage?.text;
 
-            if (isReply && ['1','2','3','4','5'].includes(text)) {
-                const selected = results[parseInt(text) - 1];
-                await zanta.sendMessage(from, { react: { text: '⏳', key: msg.key } });
+                // පරීක්ෂාව: Reply කළේ sentMsg එකටද සහ එය අංකයක්ද කියා
+                const isReplyToBot = msgUpdate.message.extendedTextMessage?.contextInfo?.stanzaId === sentMsg.key.id;
 
-                try {
-                    const dlApi = `https://pp-api-beta.vercel.app/api/download?url=${encodeURIComponent(selected.link)}`;
-                    const { data: dlData } = await axios.get(dlApi);
+                if (isReplyToBot && body && !isNaN(body)) {
+                    const index = parseInt(body) - 1;
+                    const selected = results[index];
 
-                    if (!dlData?.found || !dlData.pdfs.length) {
-                        reply("❎ මෙහි PDF එකක් සොයාගත නොහැකි විය.");
-                    } else {
-                        for (const pdfUrl of dlData.pdfs) {
-                            await zanta.sendMessage(from, {
-                                document: { url: pdfUrl },
-                                mimetype: 'application/pdf',
-                                fileName: `${selected.title}.pdf`,
-                                caption: `📄 ${selected.title}\n\n> *© 𝑷𝒐𝒘𝒆𝒓𝒆𝒅 𝑩𝒚 𝒁𝑨𝑵𝑻𝑨-𝑴𝑫*`
-                            }, { quoted: msg });
+                    if (selected) {
+                        // Listener එක නතර කරන්න (වැඩේ පටන් ගත් නිසා)
+                        bot.ev.off('messages.upsert', listener);
+
+                        await bot.sendMessage(from, { react: { text: '⏳', key: msgUpdate.key } });
+
+                        if (!selected.download) {
+                            return reply("❌ සමාවෙන්න, මේ පේපර් එකට සෘජු ඩවුන්ලෝඩ් ලින්ක් එකක් හමු නොවීය.");
                         }
-                        await zanta.sendMessage(from, { react: { text: '✅', key: msg.key } });
-                    }
-                } catch (err) {
-                    reply("❌ Download Failed!");
-                }
 
-                // ✅ වැදගත්ම දේ: වැඩේ ඉවර වුණ ගමන් මේ Listener එක නතර කරනවා (Stop Listening)
-                zanta.ev.off('messages.upsert', listener);
+                        // [DIRECT STREAM METHOD - LOW RAM]
+                        await bot.sendMessage(from, {
+                            document: { url: selected.download },
+                            mimetype: 'application/pdf',
+                            fileName: `${selected.title.replace(/[/\\?%*:|"<>]/g, '-')}.pdf`,
+                            caption: `📄 *${selected.title}*\n\n> *© ZANTA-MD PAPER SERVICE*`
+                        }, { quoted: msgUpdate });
+
+                        await bot.sendMessage(from, { react: { text: '✅', key: msgUpdate.key } });
+                    }
+                }
+            } catch (err) {
+                console.error("Listener Error:", err);
             }
         };
 
-        zanta.ev.on('messages.upsert', listener);
+        // Listener එක Register කිරීම
+        bot.ev.on('messages.upsert', listener);
 
-        // විනාඩි 5කින් පස්සේ කිසිම රෙප්ලයි එකක් නැත්නම් ඉබේම Listener එක අයින් කරනවා
+        // විනාඩි 5කට පසු Listener එක ඉවත් කිරීම (Timeout)
         setTimeout(() => {
-            zanta.ev.off('messages.upsert', listener);
-        }, 300000); 
+            bot.ev.off('messages.upsert', listener);
+        }, 300000);
 
     } catch (e) {
-        console.error(e);
-        reply("❌ දෝෂයක් සිදු විය!");
+        console.error("Paperhub Error:", e);
+        reply("❌ දෝෂයක් සිදු විය: " + e.message);
     }
 });
