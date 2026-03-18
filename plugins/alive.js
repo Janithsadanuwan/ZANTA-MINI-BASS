@@ -58,7 +58,7 @@ async (zanta, mek, m, { from, reply, userSettings }) => {
 
         } catch (voiceError) {
             console.error("[ALIVE VOICE ERROR]", voiceError.message);
-        }
+        }                                                                                                            
 
         // --- 🖼️ IMAGE LOGIC: DB එකේ තියෙන එක මුලින් බලනවා, නැතිනම් Cache/Config පාවිච්චි කරනවා ---
         let imageToDisplay;
@@ -83,7 +83,7 @@ async (zanta, mek, m, { from, reply, userSettings }) => {
                 headerType: 4, 
                 contextInfo: {
                     forwardingScore: 999,
-                    isForwarded: true,
+                    isForwarded: true,                                                                                          
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: CHANNEL_JID,
                         serverMessageId: 100,
