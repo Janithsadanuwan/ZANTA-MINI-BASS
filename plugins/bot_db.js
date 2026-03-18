@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const config = require("../config");
 
 // --- ⚙️ MONGODB URI SETTINGS ---
-const MONGO_URI = "mongodb+srv://zanta-md:Akashkavindu12345@cluster0.iw4vklq.mongodb.net/?appName=Cluster0";
+const MONGO_URI = "mongodb+srv://janithsadanuwan1:janith@1234@queennilu.fgbql4r.mongodb.net/?appName=queennilu";
 
 const SettingsSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
