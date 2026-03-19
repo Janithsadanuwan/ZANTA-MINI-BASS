@@ -2,10 +2,10 @@
   "name": "ZANTA-MD",
   "version": "1.0.0",
   "description": "A Powerfull Whatsapp Bot.",
-  "main": "index.js",
+  "main": "index.cjs",
   "scripts": {
-    "start": "node --max-old-space-size=750 --expose-gc index.js",
-    "pm2": "pm2-runtime start index.js --name ZANTA-MD --node-args='--expose-gc --max-old-space-size=750'",
+    "start": "node --max-old-space-size=750 --expose-gc index.cjs",
+    "pm2": "pm2-runtime start index.cjs --name ZANTA-MD --node-args='--expose-gc --max-old-space-size=750'",
     "stop": "pm2 stop ZANTA-MD",
     "restart": "pm2 restart ZANTA-MD"
   },
